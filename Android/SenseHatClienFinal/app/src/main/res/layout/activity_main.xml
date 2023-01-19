@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+
     <com.jjoe64.graphview.GraphView
         android:id="@+id/chart"
         android:layout_width="364dp"
@@ -71,22 +72,27 @@
         android:text="Stop"
         android:layout_below="@+id/chart"/>
 
-    <Button
-        android:id="@+id/buttonGoToDynamicList"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/startButton"
-        android:layout_centerInParent="true"
-        android:text="Dynamic List"
-    android:onClick="goToDynamicList"/>
+        android:layout_gravity="fill_vertical"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/buttonGoToDynamicList"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:onClick="goToDynamicList"
+            android:text="Dynamic List" />
 
-    <Button
-        android:id="@+id/senseHatOutputs"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/buttonGoToDynamicList"
-        android:layout_centerInParent="true"
-        android:text="LED"
-        android:onClick="goToLED"/>
+        <Button
+            android:id="@+id/senseHatOutputs"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:onClick="goToLED"
+            android:text="LED" />
+    </LinearLayout>
 
 </RelativeLayout>
