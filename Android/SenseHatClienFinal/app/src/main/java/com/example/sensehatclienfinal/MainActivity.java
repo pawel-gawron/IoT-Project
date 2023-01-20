@@ -5,11 +5,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.EventLogTags;
 import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -51,11 +53,24 @@ public class MainActivity extends AppCompatActivity {
     float temperature;
     float humidity;
     float pressure;
+    float originalSignal;
     private GraphView chart; //!< GraphView object
     private LineGraphSeries[] signal;
     int sampleMax;
-    DataPoint[] dataTemperature;
-    DataPoint[] dataPressure;
+    DataPoint[] dataOriginal;
+    DataPoint[] dataFiltered;
+    DataPoint[] dataHumidity;
+    private RadioButton optionTemp;
+    private RadioButton optionPress;
+    private RadioButton optionHum;
+    private RadioButton optionAngle;
+    private String optionChecked = null;
+    double minY = -30.0;
+    double maxY = 105.0;
+    String titleOriginal = "Temperature";
+    String titleFiltered = "Filtered Temperature";
+    String yAxisTitle = "degC";
+
     
     private IIRFIlter filter = new IIRFIlter(IIRFilterData.feedforward_coefficients, IIRFilterData.feedbackward_coefficients,
             IIRFilterData.stateforward, IIRFilterData.statebackward);
@@ -72,20 +87,11 @@ public class MainActivity extends AppCompatActivity {
 
         ChartInit();
 
-        dataPressure = new DataPoint[1000];
-        dataTemperature = new DataPoint[1000];
+        dataOriginal = new DataPoint[1000];
+        dataFiltered = new DataPoint[1000];
 
-//        sampleMax = (int)(chart.getViewport().getMaxX(false) / 100);
         sampleMax = 100;
 
-//        button.setOnClickListener(
-//                new View.OnClickListener()
-//                {
-//                    public void onClick(View view)
-//                    {
-//                        Log.v("EditText", urlAdress.getText().toString());
-//                    }
-//                });
     }
 
     public void goToDynamicList(View v){
@@ -116,7 +122,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void RunButton(View v) throws ExecutionException, InterruptedException {
-//        text = (TextView) findViewById(R.id.response);
+
+        chart.removeSeries(signal[0]);
+        chart.removeSeries(signal[1]);
+
+        
+        switch (radioButtonCheck())
+        {
+            case "Temp":
+                minY = -30.0;
+                maxY = 105.0;
+                titleOriginal = "Temperature";
+                titleFiltered = "Filtered Temperature";
+                yAxisTitle = "degC";
+                ChartInit();
+
+                break;
+            case "Press":
+                minY = 600.0;
+                maxY = 1200.0;
+                titleOriginal = "Pressure";
+                titleFiltered = "Filtered Pressure";
+                yAxisTitle = "hPa";
+                ChartInit();
+
+                break;
+            case "Hum":
+                minY = 0.0;
+                maxY = 100.0;
+                titleOriginal = "Humidity";
+                titleFiltered = "Filtered Humidity";
+                yAxisTitle = "%";
+                ChartInit();
+
+                break;
+            case "Angle":
+                minY = 0.0;
+                maxY = 90.0;
+                titleOriginal = "Angle";
+                titleFiltered = "Filtered Angle";
+                yAxisTitle = "deg";
+                ChartInit();
+
+                break;
+            default:
+                break;
+        }
 
         if(timer == null) {
             k = 0;
@@ -159,7 +210,6 @@ public class MainActivity extends AppCompatActivity {
 //         Create future request
             RequestFuture<JSONArray> future = RequestFuture.newFuture();
             JsonArrayRequest jsonRequest = new JsonArrayRequest(Request.Method.GET, urlAdress.getText().toString(), null, future, future);
-//        Log.v("Response", urlAdress.getText().toString());
 
             // Add the request to the RequestQueue.
             queue.add(jsonRequest);
@@ -172,33 +222,60 @@ public class MainActivity extends AppCompatActivity {
             humidity = Float.parseFloat(responseHumidity.getString("value"));
             pressure = Float.parseFloat(responsePressure.getString("value"));
 
-//        text.setText(responseTemperature.toString());
-//        text.setText(responseHumidity.toString());
+            switch (radioButtonCheck())
+            {
+                case "Temp":
+                    originalSignal = temperature;
+
+                    break;
+                case "Press":
+                    originalSignal = pressure;
+
+                    break;
+                case "Hum":
+                    originalSignal = humidity;
+
+                    break;
+                case "Angle":
+                    originalSignal = temperature;
+
+                    break;
+                default:
+                    break;
+            }
 
 
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-//                if (k>=sampleMax-10){
-////                    signal[0].resetData(dataTemperature);
-////                    signal[1].resetData(dataPressure);
-//                    signal[0].resetData(new DataPoint[]{});
-//                    signal[1].resetData(new DataPoint[]{});
-//                }
-                    final Double xf = filter.Execute(Double.valueOf(temperature));
-//                    Log.v("Filtered signal", xf.toString());
-                    signal[0].appendData(new DataPoint(k * 0.1, temperature), false, sampleMax);
-//                Log.v("Temperature", String.valueOf(temperature));
+
+                    final Double xf = filter.Execute(Double.valueOf(originalSignal));
+
+                    signal[0].appendData(new DataPoint(k * 0.1, originalSignal), false, sampleMax);
+
                     signal[1].appendData(new DataPoint(k * 0.1, xf), false, sampleMax);
                     chart.onDataChanged(true, true);
-                    dataTemperature[k] = new DataPoint(k*0.1, temperature);
-                    dataPressure[k] = new DataPoint(k*0.1, xf);
+                    dataOriginal[k] = new DataPoint(k*0.1, originalSignal);
+                    dataFiltered[k] = new DataPoint(k*0.1, xf);
                 }
             });
             k++;
         }else{
             timer.cancel();
             timer = null;}
+    }
+
+    String radioButtonCheck(){
+        optionTemp = findViewById(R.id.op1);
+        optionPress = findViewById(R.id.op2);
+        optionHum = findViewById(R.id.op3);
+        optionAngle = findViewById(R.id.op4);
+
+        if (optionTemp.isChecked()) optionChecked = "Temp";
+        else if (optionPress.isChecked()) optionChecked = "Press";
+        else if (optionHum.isChecked()) optionChecked = "Hum";
+        else if (optionAngle.isChecked()) optionChecked = "Angle";
+        return optionChecked;
     }
 
     private void ChartInit() {
@@ -209,24 +286,16 @@ public class MainActivity extends AppCompatActivity {
         chart.addSeries(signal[0]);
         chart.addSeries(signal[1]);
 
-//        chart.getSecondScale().addSeries(signal[1]);
-
-//        chart.getSecondScale().setMinY(260);
-//        chart.getSecondScale().setMaxY(1260);
-//        chart.getSecondScale().setMinY(-30);
-//        chart.getSecondScale().setMaxY(105);
-//        chart.getGridLabelRenderer().setVerticalLabelsSecondScaleColor(Color.RED);
-
         chart.getViewport().setXAxisBoundsManual(true);
         chart.getViewport().setMinX(0.0);
         chart.getViewport().setMaxX(10.0);
         chart.getViewport().setYAxisBoundsManual(true);
-        chart.getViewport().setMinY(-30.0);
-        chart.getViewport().setMaxY(105.0);
+        chart.getViewport().setMinY(minY);
+        chart.getViewport().setMaxY(maxY);
 
-        signal[0].setTitle("Temperature");
+        signal[0].setTitle(titleOriginal);
         signal[0].setColor(Color.BLUE);
-        signal[1].setTitle("Pressure");
+        signal[1].setTitle(titleFiltered);
         signal[1].setColor(Color.RED);
 
         chart.getLegendRenderer().setVisible(true);
@@ -234,7 +303,7 @@ public class MainActivity extends AppCompatActivity {
         chart.getLegendRenderer().setTextSize(30);
 
         chart.getGridLabelRenderer().setTextSize(20);
-        chart.getGridLabelRenderer().setVerticalAxisTitle(Space(7) + "Amplitude [-]");
+        chart.getGridLabelRenderer().setVerticalAxisTitle(Space(7) + yAxisTitle);
         chart.getGridLabelRenderer().setHorizontalAxisTitle(Space(11) + "Time [s]");
         chart.getGridLabelRenderer().setNumHorizontalLabels(9);
         chart.getGridLabelRenderer().setNumVerticalLabels(7);
