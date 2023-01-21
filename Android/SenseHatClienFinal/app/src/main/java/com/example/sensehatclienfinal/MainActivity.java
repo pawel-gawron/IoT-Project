@@ -2,6 +2,8 @@ package com.example.sensehatclienfinal;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -40,9 +42,9 @@ import java.util.concurrent.TimeoutException;
 public class MainActivity extends AppCompatActivity {
 
     private Button buttonDynamicList;
-    EditText urlAdress;
-    Button buttonStart;
-    Button buttonStop;
+    String url;
+    private TextView urlAdress;
+    private TextView textViewSampleTime;
     RequestQueue queue;
     JSONObject responseTemperature;
     JSONObject responseHumidity;
@@ -59,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
     int sampleMax;
     DataPoint[] dataOriginal;
     DataPoint[] dataFiltered;
-    DataPoint[] dataHumidity;
     private RadioButton optionTemp;
     private RadioButton optionPress;
     private RadioButton optionHum;
@@ -70,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
     String titleOriginal = "Temperature";
     String titleFiltered = "Filtered Temperature";
     String yAxisTitle = "degC";
+    /* BEGIN config data */
+    private String ipAddress = Common.DEFAULT_IP_ADDRESS;
+    private int sampleTime = Common.DEFAULT_SAMPLE_TIME;
+    /* END config data */
 
     
     private IIRFIlter filter = new IIRFIlter(IIRFilterData.feedforward_coefficients, IIRFilterData.feedbackward_coefficients,
@@ -80,18 +85,55 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        buttonStop = (Button) findViewById(R.id.stopButton);
-        buttonStart = (Button) findViewById(R.id.startButton);
-        urlAdress= (EditText) findViewById(R.id.urlAdress);
-        buttonDynamicList = (Button) findViewById(R.id.buttonGoToDynamicList);
+        urlAdress= (TextView) findViewById(R.id.urlAdress);
+        urlAdress.setText(getIpAddressDisplayText(ipAddress));
 
+        textViewSampleTime = findViewById(R.id.textViewSampleTime);
+        textViewSampleTime.setText(getSampleTimeDisplayText(Integer.toString(sampleTime)));
         ChartInit();
 
-        dataOriginal = new DataPoint[1000];
-        dataFiltered = new DataPoint[1000];
+        dataOriginal = new DataPoint[1000*(100/sampleTime)];
+        dataFiltered = new DataPoint[1000*(100/sampleTime)];
 
-        sampleMax = 100;
+        sampleMax = 100*(100/sampleTime);
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent dataIntent) {
+        super.onActivityResult(requestCode, resultCode, dataIntent);
+        if ((requestCode == Common.REQUEST_CODE_CONFIG) && (resultCode == RESULT_OK)) {
+
+            // IoT server IP address
+            ipAddress = dataIntent.getStringExtra(Common.CONFIG_IP_ADDRESS);
+            urlAdress.setText(getIpAddressDisplayText(ipAddress));
+
+            //Sample time (ms)
+            String sampleTimeText = dataIntent.getStringExtra(Common.CONFIG_SAMPLE_TIME);
+            sampleTime = Integer.parseInt(sampleTimeText);
+            textViewSampleTime.setText(getSampleTimeDisplayText(sampleTimeText));
+
+            dataOriginal = new DataPoint[1000*(100/sampleTime)];
+            dataFiltered = new DataPoint[1000*(100/sampleTime)];
+
+            sampleMax = 100*(100/sampleTime);
+        }
+    }
+
+    private void openConfig() {
+        Intent openConfigIntent = new Intent(this, ConfigActivity.class);
+        Bundle configBundle = new Bundle();
+        configBundle.putString(Common.CONFIG_IP_ADDRESS, ipAddress);
+        configBundle.putInt(Common.CONFIG_SAMPLE_TIME, sampleTime);
+        openConfigIntent.putExtras(configBundle);
+        startActivityForResult(openConfigIntent, Common.REQUEST_CODE_CONFIG);
+    }
+
+    private String getIpAddressDisplayText(String ip) {
+        return ("IP: " + ip);
+    }
+
+    private String getSampleTimeDisplayText(String st) {
+        return ("Sample time: " + st + " ms");
     }
 
     public void goToDynamicList(View v){
@@ -112,12 +154,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void goToLED(View v){
+        try {
         Intent intent = new Intent(this, LEDSending.class);
         startActivity(intent);
 
         if(timer != null) {
             timer.cancel();
             timer = null;
+        }
+        } catch (Exception e) {
+            // This will catch any exception, because they are all descended from Exception
+            System.out.println("Error " + e.getMessage());
+        }
+    }
+
+    public void goToConfigActivity(View v){
+
+        try {
+            openConfig();
+
+            if(timer != null) {
+                timer.cancel();
+                timer = null;
+            }
+
+        } catch (Exception e) {
+            // This will catch any exception, because they are all descended from Exception
+            System.out.println("Error " + e.getMessage());
         }
     }
 
@@ -191,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     ; }
             };
-            timer.scheduleAtFixedRate(filterTimerTask, 0, (int)(100));
+            timer.scheduleAtFixedRate(filterTimerTask, 0, (int)(sampleTime));
         }
     }
 
@@ -205,11 +268,15 @@ public class MainActivity extends AppCompatActivity {
     public void server() throws ExecutionException, InterruptedException, TimeoutException, JSONException {
 
         if (k <= sampleMax) {
-            queue = Volley.newRequestQueue(this.getApplicationContext());
+            if (queue == null) {
+                queue = Volley.newRequestQueue(this.getApplicationContext());
+            }
+
+            url = "http://" + ipAddress + "/AiRProjectMock.php";
 
 //         Create future request
             RequestFuture<JSONArray> future = RequestFuture.newFuture();
-            JsonArrayRequest jsonRequest = new JsonArrayRequest(Request.Method.GET, urlAdress.getText().toString(), null, future, future);
+            JsonArrayRequest jsonRequest = new JsonArrayRequest(Request.Method.GET, url, null, future, future);
 
             // Add the request to the RequestQueue.
             queue.add(jsonRequest);
@@ -251,12 +318,12 @@ public class MainActivity extends AppCompatActivity {
 
                     final Double xf = filter.Execute(Double.valueOf(originalSignal));
 
-                    signal[0].appendData(new DataPoint(k * 0.1, originalSignal), false, sampleMax);
+                    signal[0].appendData(new DataPoint(k * (sampleTime/1000.0), originalSignal), false, sampleMax);
 
-                    signal[1].appendData(new DataPoint(k * 0.1, xf), false, sampleMax);
+                    signal[1].appendData(new DataPoint(k * (sampleTime/1000.0), xf), false, sampleMax);
                     chart.onDataChanged(true, true);
-                    dataOriginal[k] = new DataPoint(k*0.1, originalSignal);
-                    dataFiltered[k] = new DataPoint(k*0.1, xf);
+                    dataOriginal[k] = new DataPoint(k*(sampleTime/1000.0), originalSignal);
+                    dataFiltered[k] = new DataPoint(k*(sampleTime/1000.0), xf);
                 }
             });
             k++;

@@ -38,49 +38,71 @@ public class DynamicList extends AppCompatActivity implements MyRecyclerViewAdap
     MyRecyclerViewAdapter adapter;
     RecyclerView recyclerView;
 
-    private Button buttonChart;
-    int temp;
+    private TextView urlAdressList;;
+    private TextView sampleTimeList;
+    String url;
     RequestQueue queue;
     JSONArray responseName;
     JSONArray responseValue;
     JSONArray responseUnit;
-    EditText urlAdressList;
     TextView name;
     TextView value;
     TextView unit;
     Timer timerList;
-    int kList = 0; //!< Samples counter
-    float temperatureValue;
-    float humidityValue;
-    float pressureValue;
-    String temperatureName;
-    String humidityName;
-    String pressureName;
-    String temperatureUnit;
-    String humidityUnit;
-    String pressureUnit;
     LinearLayoutManager manager;
-    List listName = new ArrayList();
-    List listValues = new ArrayList();
-    List listUnit = new ArrayList();
+    /* BEGIN config data */
+    private String ipAddress = Common.DEFAULT_IP_ADDRESS;
+    private int sampleTime = Common.DEFAULT_SAMPLE_TIME;
+    /* END config data */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dynamic_list);
 
-        urlAdressList= (EditText) findViewById(R.id.urlAdressList);
+        urlAdressList= (TextView) findViewById(R.id.urlAdressList);
+        urlAdressList.setText(getIpAddressDisplayText(ipAddress));
 
-//        buttonChart = (Button) findViewById(R.id.buttonGoToChart);
-
-//        setContentView(R.layout.activity_dynamic_list_measurements);
-
-//        name= (TextView) findViewById(R.id.name);
-
+        sampleTimeList = findViewById(R.id.textViewSampleTime);
+        sampleTimeList.setText(getSampleTimeDisplayText(Integer.toString(sampleTime)));
 
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent dataIntent) {
+        super.onActivityResult(requestCode, resultCode, dataIntent);
+        if ((requestCode == Common.REQUEST_CODE_CONFIG) && (resultCode == RESULT_OK)) {
+
+            // IoT server IP address
+            ipAddress = dataIntent.getStringExtra(Common.CONFIG_IP_ADDRESS);
+            urlAdressList.setText(getIpAddressDisplayText(ipAddress));
+
+            //Sample time (ms)
+            String sampleTimeText = dataIntent.getStringExtra(Common.CONFIG_SAMPLE_TIME);
+            sampleTime = Integer.parseInt(sampleTimeText);
+            sampleTimeList.setText(getSampleTimeDisplayText(sampleTimeText));
+        }
+    }
+
+    private void openConfig() {
+        Intent openConfigIntent = new Intent(this, ConfigActivity.class);
+        Bundle configBundle = new Bundle();
+        configBundle.putString(Common.CONFIG_IP_ADDRESS, ipAddress);
+        configBundle.putInt(Common.CONFIG_SAMPLE_TIME, sampleTime);
+        openConfigIntent.putExtras(configBundle);
+        startActivityForResult(openConfigIntent, Common.REQUEST_CODE_CONFIG);
+    }
+
+    private String getIpAddressDisplayText(String ip) {
+        return ("IP: " + ip);
+    }
+
+    private String getSampleTimeDisplayText(String st) {
+        return ("Sample time: " + st + " ms");
+    }
+
     public void goToChart(View v){
+        try {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
 
@@ -88,9 +110,14 @@ public class DynamicList extends AppCompatActivity implements MyRecyclerViewAdap
             timerList.cancel();
             timerList = null;
         }
+        } catch (Exception e) {
+            // This will catch any exception, because they are all descended from Exception
+            System.out.println("Error " + e.getMessage());
+        }
     }
 
     public void goToLED(View v){
+        try {
         Intent intent = new Intent(this, LEDSending.class);
         startActivity(intent);
 
@@ -98,12 +125,31 @@ public class DynamicList extends AppCompatActivity implements MyRecyclerViewAdap
             timerList.cancel();
             timerList = null;
         }
+        } catch (Exception e) {
+            // This will catch any exception, because they are all descended from Exception
+            System.out.println("Error " + e.getMessage());
+        }
+    }
+
+    public void goToConfigActivity(View v){
+
+        try {
+            openConfig();
+
+            if(timerList != null) {
+                timerList.cancel();
+                timerList = null;
+            }
+
+        } catch (Exception e) {
+            // This will catch any exception, because they are all descended from Exception
+            System.out.println("Error " + e.getMessage());
+        }
     }
 
     public void refresh(View v){
 
         if(timerList == null) {
-            kList = 0;
 
             timerList = new Timer();
             TimerTask filterTimerTask = new TimerTask() {
@@ -121,16 +167,27 @@ public class DynamicList extends AppCompatActivity implements MyRecyclerViewAdap
                     }
                     ; }
             };
-            timerList.scheduleAtFixedRate(filterTimerTask, 0, (int)(100));
+            timerList.scheduleAtFixedRate(filterTimerTask, 0, (int)(sampleTime));
+        }
+    }
+
+    public void stop(View v) {
+        if(timerList != null) {
+            timerList.cancel();
+            timerList = null;
         }
     }
 
     public void server() throws ExecutionException, InterruptedException, TimeoutException, JSONException {
-        queue = Volley.newRequestQueue(this.getApplicationContext());
+        if (queue == null) {
+            queue = Volley.newRequestQueue(this.getApplicationContext());
+        }
+
+        url = "http://" + ipAddress + "/AiRProjectMock.php";
 
 //         Create future request
         RequestFuture<JSONObject> future = RequestFuture.newFuture();
-        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET, urlAdressList.getText().toString(), null, future, future);
+        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET, url, null, future, future);
 //        Log.v("Response", urlAdress.getText().toString());
 
         // Add the request to the RequestQueue.

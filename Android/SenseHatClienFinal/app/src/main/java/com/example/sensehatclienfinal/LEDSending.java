@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TableLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -32,8 +33,9 @@ public class LEDSending extends AppCompatActivity {
 
     SeekBar redSeekBar, greenSeekBar, blueSeekBar;
     View colorView;     ///< Color preview
-    EditText urlText;
-    String url = "http://192.168.1.208/led_display.php";  ///< Default IoT server script URL
+    String url;
+    private TextView urlAdress;
+    private TextView textViewSampleTime;
     private RequestQueue queue; ///< HTTP requests queue
 
     /* BEGIN colors */
@@ -52,10 +54,21 @@ public class LEDSending extends AppCompatActivity {
 
     Map<String, String> paramsClear = new HashMap<String, String>(); ///< HTTP POST data: clear display command
 
+    /* BEGIN config data */
+    private String ipAddress = Common.DEFAULT_IP_ADDRESS;
+    private int sampleTime = Common.DEFAULT_SAMPLE_TIME;
+    /* END config data */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_led_sending);
+
+        urlAdress= (TextView) findViewById(R.id.urlAdress);
+        urlAdress.setText(getIpAddressDisplayText(ipAddress));
+
+        textViewSampleTime = findViewById(R.id.textViewSampleTime);
+        textViewSampleTime.setText(getSampleTimeDisplayText(Integer.toString(sampleTime)));
 
         ledOffColor = ResourcesCompat.getColor(getResources(), R.color.ledIndBackground, null);
         ledOffColorVec = intToRgb(ledOffColor);
@@ -112,8 +125,6 @@ public class LEDSending extends AppCompatActivity {
 
         colorView = findViewById(R.id.colorView);
 
-        urlText = findViewById(R.id.urlText);
-        urlText.setText(url);
 
         for(int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -122,6 +133,39 @@ public class LEDSending extends AppCompatActivity {
                 paramsClear.put(ledIndexToTag(i, j), data);
             }
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent dataIntent) {
+        super.onActivityResult(requestCode, resultCode, dataIntent);
+        if ((requestCode == Common.REQUEST_CODE_CONFIG) && (resultCode == RESULT_OK)) {
+
+            // IoT server IP address
+            ipAddress = dataIntent.getStringExtra(Common.CONFIG_IP_ADDRESS);
+            urlAdress.setText(getIpAddressDisplayText(ipAddress));
+
+            //Sample time (ms)
+            String sampleTimeText = dataIntent.getStringExtra(Common.CONFIG_SAMPLE_TIME);
+            sampleTime = Integer.parseInt(sampleTimeText);
+            textViewSampleTime.setText(getSampleTimeDisplayText(sampleTimeText));
+        }
+    }
+
+    private void openConfig() {
+        Intent openConfigIntent = new Intent(this, ConfigActivity.class);
+        Bundle configBundle = new Bundle();
+        configBundle.putString(Common.CONFIG_IP_ADDRESS, ipAddress);
+        configBundle.putInt(Common.CONFIG_SAMPLE_TIME, sampleTime);
+        openConfigIntent.putExtras(configBundle);
+        startActivityForResult(openConfigIntent, Common.REQUEST_CODE_CONFIG);
+    }
+
+    private String getIpAddressDisplayText(String ip) {
+        return ("IP: " + ip);
+    }
+
+    private String getSampleTimeDisplayText(String st) {
+        return ("Sample time: " + st + " ms");
     }
 
     public void goToDynamicList(View v){
@@ -136,10 +180,26 @@ public class LEDSending extends AppCompatActivity {
         }
     }
 
-    public void goToChart(View v){
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+    public void goToChart(View v) {
+        try {
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+        }catch (Exception e) {
+            // This will catch any exception, because they are all descended from Exception
+            System.out.println("Error " + e.getMessage());
         }
+    }
+
+    public void goToConfigActivity(View v){
+
+        try {
+            openConfig();
+
+        } catch (Exception e) {
+            // This will catch any exception, because they are all descended from Exception
+            System.out.println("Error " + e.getMessage());
+        }
+    }
 
 
     public void clearDisplayModel() {
@@ -270,7 +330,8 @@ public class LEDSending extends AppCompatActivity {
 
     public void sendControlRequest(View v) throws JSONException {
         queue = Volley.newRequestQueue(this.getApplicationContext());
-        url = urlText.getText().toString();
+        url = "http://" + ipAddress + "/AiRProjectMock.php";
+        Log.v("Url address: ", url);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, getDisplayControlParams(), new Response.Listener<JSONObject>() {
             @Override

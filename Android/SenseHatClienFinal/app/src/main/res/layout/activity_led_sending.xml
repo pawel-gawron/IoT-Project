@@ -15,11 +15,44 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-    <EditText
-        android:id="@+id/urlText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="10sp"/>
+        <LinearLayout
+            android:id="@+id/linearLayoutConfigText"
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_below="@+id/senseHatClient"
+            app:layout_constraintVertical_bias="0.1">
+
+
+            <TextView
+                android:id="@+id/urlAdress"
+                android:layout_width="132dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:gravity="start"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/textViewSampleTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:gravity="end"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </LinearLayout>
     <!--            android:visibility="gone" -->
 
     <TableLayout
@@ -1709,6 +1742,14 @@ android:orientation="horizontal">
     android:layout_weight="2"
     android:onClick="goToChart"
     android:text="Chart" />
+    <Button
+        android:id="@+id/configActivity"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:onClick="goToConfigActivity"
+        android:text="CONFIG" />
 </LinearLayout>
 
 <LinearLayout

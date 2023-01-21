@@ -7,6 +7,45 @@
     tools:context=".MainActivity">
 
 
+    <LinearLayout
+        android:id="@+id/linearLayoutConfigText"
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_below="@+id/senseHatClient"
+        app:layout_constraintVertical_bias="0.1">
+
+
+        <TextView
+            android:id="@+id/urlAdress"
+            android:layout_width="132dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:gravity="start"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/textViewSampleTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:gravity="end"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </LinearLayout>
+
     <com.jjoe64.graphview.GraphView
         android:id="@+id/chart"
         android:layout_width="364dp"
@@ -14,18 +53,7 @@
         android:layout_centerInParent="true" />
 
 
-    <EditText
-        android:id="@+id/urlAdress"
-        android:layout_width="wrap_content"
-        android:layout_height="39dp"
-        android:layout_above="@+id/chart"
-        android:layout_marginStart="100dp"
-        android:layout_marginEnd="100dp"
-        android:layout_marginBottom="0dp"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:minHeight="48dp"
-        android:text="http://192.168.0.20/AiRProjectMock.php" />
+
 
     <TextView
         android:id="@+id/senseHatClient"
@@ -38,22 +66,6 @@
         android:text="Sense Hat Client"
         android:textSize="34sp" />
 
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="233dp"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/urlAdress"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="160dp"
-        android:layout_marginTop="17dp"
-        android:layout_marginEnd="140dp"
-        android:layout_marginBottom="12dp"
-        android:text="url Adress"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/senseHatClient" />
 
     <Button
         android:id="@+id/startButton"
@@ -143,6 +155,15 @@
             android:layout_weight="2"
             android:onClick="goToLED"
             android:text="LED" />
+
+        <Button
+            android:id="@+id/configActivity"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:onClick="goToConfigActivity"
+            android:text="CONFIG" />
     </LinearLayout>
     </LinearLayout>
 
