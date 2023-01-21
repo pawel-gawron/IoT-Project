@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os/exec"
+
+	"github.com/zeromq/goczmq"
 )
 
 type Measurement struct {
@@ -25,17 +26,23 @@ func get_measurements(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	output, err := exec.Command("./get_measurements.py").Output()
-
+	new_rq, err := goczmq.NewReq("tcp://localhost:5555")
 	if err != nil {
-		message := "Cannot get measurements"
+		log.Fatal(err)
+	}
+	defer new_rq.Destroy()
+
+	new_rq.SendFrame([]byte("get_meas"), goczmq.FlagNone)
+	reply, err := new_rq.RecvMessage()
+	if err != nil {
+		message := "Cannot get color settings from LED matrix"
 		log.Printf("%s: %s\n", message, err)
 		http.Error(w, message, http.StatusServiceUnavailable)
 		return
 	}
 
 	var measurements_list []float32
-	json.Unmarshal(output, &measurements_list)
+	json.Unmarshal(reply[0], &measurements_list)
 
 	resp := make(map[string]Measurement)
 	resp["temperature"] = Measurement{Value: measurements_list[0], Unit: "C"}

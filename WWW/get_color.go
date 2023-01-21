@@ -3,7 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
-	"os/exec"
+
+	"github.com/zeromq/goczmq"
 )
 
 func get_color(w http.ResponseWriter, r *http.Request) {
@@ -19,8 +20,14 @@ func get_color(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	output, err := exec.Command("./get_color.py").Output()
+	new_rq, err := goczmq.NewReq("tcp://localhost:5555")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer new_rq.Destroy()
 
+	new_rq.SendFrame([]byte("get_color"), goczmq.FlagNone)
+	reply, err := new_rq.RecvMessage()
 	if err != nil {
 		message := "Cannot get color settings from LED matrix"
 		log.Printf("%s: %s\n", message, err)
@@ -28,5 +35,5 @@ func get_color(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(output))
+	w.Write(reply[0])
 }
