@@ -6,13 +6,6 @@ import (
 	"os/exec"
 )
 
-type Color struct {
-	R     uint8 `json:"R"`
-	G     uint8 `json:"G"`
-	B     uint8 `json:"B"`
-	State bool  `json:"state"`
-}
-
 func set_color(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/set_color" {
 		http.Error(w, "404 not found", http.StatusNotFound)
