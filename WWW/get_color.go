@@ -23,7 +23,7 @@ func get_color(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		message := "Cannot get color settings from LED matrix"
-		log.Print(message)
+		log.Printf("%s: %s\n", message, err)
 		http.Error(w, message, http.StatusServiceUnavailable)
 		return
 	}

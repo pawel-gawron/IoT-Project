@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from sense_hat import SenseHat
+from sense_emu import SenseHat
 import json
 import sys
 

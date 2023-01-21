@@ -9,6 +9,7 @@ import (
 func main() {
 	http.HandleFunc("/set_color", set_color)
 	http.HandleFunc("/get_color", get_color)
+	http.HandleFunc("/get_measurements", get_measurements)
 
 	fmt.Println("Starting server at port 8080")
 
