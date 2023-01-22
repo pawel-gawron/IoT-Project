@@ -1,4 +1,4 @@
-from sense_emu import SenseHat
+from sense_hat import SenseHat
 from zmq import Context, REP
 from json import dumps, loads
 from re import search
@@ -21,8 +21,8 @@ def get_color(sense):
     for x in range(8):
         row = {}
         for y in range(8):
-            pixel = Pixel(pixels_list[8 * x + y][0], pixels_list[8 * x + y][1],
-                          pixels_list[8 * x + y][2])
+            pixel = Pixel(pixels_list[x + 8 * y][0], pixels_list[x + 8 * y][1],
+                          pixels_list[x + 8 * y][2])
             row[str(y)] = pixel.__dict__
 
         led_matrix[str(x)] = row
@@ -43,7 +43,7 @@ def set_color(sense, color_settings):
             r = settings[str(x)][str(y)]["R"]
             g = settings[str(x)][str(y)]["G"]
             b = settings[str(x)][str(y)]["B"]
-            led_matrix[8 * x + y] = [r, g, b]
+            led_matrix[x + 8 * y] = [r, g, b]
 
     sense.set_pixels(led_matrix)
 
