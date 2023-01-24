@@ -105,14 +105,14 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:checked="true"
-                android:text="Temperature" />
+                android:text="Temp" />
 
             <RadioButton
                 android:id="@+id/op2"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="Pressure" />
+                android:text="Press" />
 
             <RadioButton
                 android:id="@+id/op3"
@@ -120,14 +120,28 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="Humidity" />
+                android:text="Humi" />
 
             <RadioButton
                 android:id="@+id/op4"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="Angle" />
+                android:text="Roll" />
+
+            <RadioButton
+                android:id="@+id/op5"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Pitch" />
+
+            <RadioButton
+                android:id="@+id/op6"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Yaw" />
         </RadioGroup>
 
     <LinearLayout

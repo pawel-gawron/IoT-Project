@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.StringRequest;
@@ -73,7 +74,9 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton optionTemp;
     private RadioButton optionPress;
     private RadioButton optionHum;
-    private RadioButton optionAngle;
+    private RadioButton optionRoll;
+    private RadioButton optionPitch;
+    private RadioButton optionYaw;
     private String optionChecked = null;
     double minY = -30.0;
     double maxY = 105.0;
@@ -99,11 +102,9 @@ public class MainActivity extends AppCompatActivity {
 
         textViewSampleTime = findViewById(R.id.textViewSampleTime);
         textViewSampleTime.setText(getSampleTimeDisplayText(Integer.toString(sampleTime)));
-        ChartInit(false);
+        ChartInit();
 
         sampleMax = 100*(100/sampleTime);
-        angleVector.add((float) 0);
-        angleVector.add((float) 0);
     }
 
     @Override
@@ -193,11 +194,6 @@ public class MainActivity extends AppCompatActivity {
 
         chart.removeSeries(signal[0]);
         chart.removeSeries(signal[1]);
-//        chart.removeSeries(signal[2]);
-//        chart.removeSeries(signal[3]);
-//        chart.removeSeries(signal[4]);
-//        chart.removeSeries(signal[5]);
-
         
         switch (radioButtonCheck())
         {
@@ -207,8 +203,7 @@ public class MainActivity extends AppCompatActivity {
                 titleOriginal = "Temperature";
                 titleFiltered = "Filtered Temperature";
                 yAxisTitle = "degC";
-                extendChart = true;
-                ChartInit(false);
+                ChartInit();
 
                 break;
             case "Press":
@@ -217,8 +212,7 @@ public class MainActivity extends AppCompatActivity {
                 titleOriginal = "Pressure";
                 titleFiltered = "Filtered Pressure";
                 yAxisTitle = "hPa";
-                extendChart = true;
-                ChartInit(false);
+                ChartInit();
 
                 break;
             case "Hum":
@@ -227,18 +221,34 @@ public class MainActivity extends AppCompatActivity {
                 titleOriginal = "Humidity";
                 titleFiltered = "Filtered Humidity";
                 yAxisTitle = "%";
-                extendChart = true;
-                ChartInit(false);
+                ChartInit();
 
                 break;
-            case "Angle":
+            case "Pitch":
                 minY = 0.0;
                 maxY = 90.0;
-                titleOriginal = "Angle";
-                titleFiltered = "Filtered Angle";
+                titleOriginal = "Angle Pitch";
+                titleFiltered = "Filtered Pitch";
                 yAxisTitle = "deg";
-                extendChart = false;
-                ChartInit(true);
+                ChartInit();
+
+                break;
+            case "Roll":
+                minY = 0.0;
+                maxY = 90.0;
+                titleOriginal = "Angle Yaw";
+                titleFiltered = "Filtered Yaw";
+                yAxisTitle = "deg";
+                ChartInit();
+
+                break;
+            case "Yaw":
+                minY = 0.0;
+                maxY = 90.0;
+                titleOriginal = "Angle Roll";
+                titleFiltered = "Filtered Roll";
+                yAxisTitle = "deg";
+                ChartInit();
 
                 break;
             default:
@@ -250,10 +260,6 @@ public class MainActivity extends AppCompatActivity {
 
             signal[0].resetData(new DataPoint[]{});
             signal[1].resetData(new DataPoint[]{});
-            signal[2].resetData(new DataPoint[]{});
-            signal[3].resetData(new DataPoint[]{});
-            signal[4].resetData(new DataPoint[]{});
-            signal[5].resetData(new DataPoint[]{});
 
             timer = new Timer();
             TimerTask filterTimerTask = new TimerTask() {
@@ -289,21 +295,21 @@ public class MainActivity extends AppCompatActivity {
                 queue = Volley.newRequestQueue(this.getApplicationContext());
             }
 
-            url = "http://" + ipAddress + "/AiRProjectMock.php";
+            url = "http://" + ipAddress + "/get_measurements";
 
 //         Create future request
-            RequestFuture<JSONArray> future = RequestFuture.newFuture();
-            JsonArrayRequest jsonRequest = new JsonArrayRequest(Request.Method.GET, url, null, future, future);
+            RequestFuture<JSONObject> future = RequestFuture.newFuture();
+            JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET, url, null, future, future);
 
             // Add the request to the RequestQueue.
             queue.add(jsonRequest);
 
-            responseTemperature = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get(0);
-            responseHumidity = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get(1);
-            responsePressure = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get(2);
-            responsePitch = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get(4);
-            responseRoll = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get(3);
-            responseYaw = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get(5);
+            responseTemperature = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get("temperature");
+            responseHumidity = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get("humidity");
+            responsePressure = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get("pressure");
+            responsePitch = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get("pitch");
+            responseRoll = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get("roll");
+            responseYaw = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get("yaw");
 
             temperature = Float.parseFloat(responseTemperature.getString("value"));
             humidity = Float.parseFloat(responseHumidity.getString("value"));
@@ -326,10 +332,16 @@ public class MainActivity extends AppCompatActivity {
                     originalSignal = humidity;
 
                     break;
-                case "Angle":
+                case "Roll":
                     originalSignal = roll;
-                    angleVector.set(0, pitch);
-                    angleVector.set(1, yaw);
+
+                    break;
+                case "Pitch":
+                    originalSignal = pitch;
+
+                    break;
+                case "Yaw":
+                    originalSignal = yaw;
 
                     break;
                 default:
@@ -341,20 +353,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
 
-                    Double xf = filter.Execute(Double.valueOf(originalSignal));
+                    final Double xf = filter.Execute(Double.valueOf(originalSignal));
 
-                        signal[0].appendData(new DataPoint(k * (sampleTime / 1000.0), originalSignal), false, sampleMax);
-                        signal[1].appendData(new DataPoint(k * (sampleTime / 1000.0), xf), false, sampleMax);
-                    if(!extendedChart)
-                    {
-                        xf = filter.Execute(Double.valueOf(angleVector.get(0)));
-                        signal[2].appendData(new DataPoint(k * (sampleTime / 1000.0), angleVector.get(0)), false, sampleMax);
-                        signal[3].appendData(new DataPoint(k * (sampleTime / 1000.0), xf), false, sampleMax);
-
-                        xf = filter.Execute(Double.valueOf(angleVector.get(1)));
-                        signal[4].appendData(new DataPoint(k * (sampleTime / 1000.0), angleVector.get(1)), false, sampleMax);
-                        signal[5].appendData(new DataPoint(k * (sampleTime / 1000.0), xf), false, sampleMax);
-                    }
+                    signal[0].appendData(new DataPoint(k * (sampleTime / 1000.0), originalSignal), false, sampleMax);
+                    signal[1].appendData(new DataPoint(k * (sampleTime / 1000.0), xf), false, sampleMax);
                     chart.onDataChanged(true, true);
                 }
             });
@@ -368,31 +370,25 @@ public class MainActivity extends AppCompatActivity {
         optionTemp = findViewById(R.id.op1);
         optionPress = findViewById(R.id.op2);
         optionHum = findViewById(R.id.op3);
-        optionAngle = findViewById(R.id.op4);
+        optionRoll = findViewById(R.id.op4);
+        optionPitch = findViewById(R.id.op5);
+        optionYaw = findViewById(R.id.op6);
 
         if (optionTemp.isChecked()) optionChecked = "Temp";
         else if (optionPress.isChecked()) optionChecked = "Press";
         else if (optionHum.isChecked()) optionChecked = "Hum";
-        else if (optionAngle.isChecked()) optionChecked = "Angle";
+        else if (optionRoll.isChecked()) optionChecked = "Roll";
+        else if (optionPitch.isChecked()) optionChecked = "Pitch";
+        else if (optionYaw.isChecked()) optionChecked = "Yaw";
         return optionChecked;
     }
 
-    private void ChartInit(Boolean typeChart) {
+    private void ChartInit() {
         // https://github.com/jjoe64/GraphView/wiki
         chart = (GraphView)findViewById(R.id.chart);
 
-        if(!typeChart) {
-            signal = new LineGraphSeries[]{new LineGraphSeries<>(new DataPoint[]{}),
-                    new LineGraphSeries<>(new DataPoint[]{})};
-        }else
-        {
-            signal = new LineGraphSeries[]{new LineGraphSeries<>(new DataPoint[]{}),
-                    new LineGraphSeries<>(new DataPoint[]{}),
-                    new LineGraphSeries<>(new DataPoint[]{}),
-                    new LineGraphSeries<>(new DataPoint[]{}),
-                    new LineGraphSeries<>(new DataPoint[]{}),
-                    new LineGraphSeries<>(new DataPoint[]{})};
-        }
+        signal = new LineGraphSeries[]{new LineGraphSeries<>(new DataPoint[]{}),
+                new LineGraphSeries<>(new DataPoint[]{})};
         chart.addSeries(signal[0]);
         chart.addSeries(signal[1]);
 
@@ -407,25 +403,6 @@ public class MainActivity extends AppCompatActivity {
         signal[0].setColor(Color.BLUE);
         signal[1].setTitle(titleFiltered);
         signal[1].setColor(Color.RED);
-
-        if(typeChart) {
-            chart.addSeries(signal[2]);
-            chart.addSeries(signal[3]);
-            chart.addSeries(signal[4]);
-            chart.addSeries(signal[5]);
-            signal[0].setTitle(titleOriginal + " Roll");
-            signal[0].setColor(Color.BLUE);
-            signal[1].setTitle(titleFiltered + " Roll");
-            signal[1].setColor(Color.RED);
-            signal[2].setTitle(titleOriginal + " Pitch");
-            signal[2].setColor(Color.GREEN);
-            signal[3].setTitle(titleFiltered + " Pitch");
-            signal[3].setColor(Color.YELLOW);
-            signal[4].setTitle(titleOriginal + " Yaw");
-            signal[4].setColor(Color.BLACK);
-            signal[5].setTitle(titleFiltered + " Yaw");
-            signal[5].setColor(Color.CYAN);
-        }
 
         chart.getLegendRenderer().setVisible(true);
         chart.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);

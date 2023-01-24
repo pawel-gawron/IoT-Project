@@ -183,7 +183,7 @@ public class DynamicList extends AppCompatActivity implements MyRecyclerViewAdap
             queue = Volley.newRequestQueue(this.getApplicationContext());
         }
 
-        url = "http://" + ipAddress + "/AiRProjectMock.php";
+        url = "http://" + ipAddress + "/get_measurements?format=1";
 
 //         Create future request
         RequestFuture<JSONObject> future = RequestFuture.newFuture();
@@ -193,9 +193,9 @@ public class DynamicList extends AppCompatActivity implements MyRecyclerViewAdap
         // Add the request to the RequestQueue.
         queue.add(jsonRequest);
 
-        responseName = (JSONArray) future.get(100, TimeUnit.MILLISECONDS).get("Name");
-        responseValue = (JSONArray) future.get(100, TimeUnit.MILLISECONDS).get("Value");
-        responseUnit = (JSONArray) future.get(100, TimeUnit.MILLISECONDS).get("Unit");
+        responseName = (JSONArray) future.get(100, TimeUnit.MILLISECONDS).get("name");
+        responseValue = (JSONArray) future.get(100, TimeUnit.MILLISECONDS).get("value");
+        responseUnit = (JSONArray) future.get(100, TimeUnit.MILLISECONDS).get("unit");
 //        Log.v("Get JSONArray", response.toString());
 
         View inflatedView = getLayoutInflater().inflate(R.layout.activity_dynamic_list_measurements, null);

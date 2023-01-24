@@ -330,10 +330,10 @@ public class LEDSending extends AppCompatActivity {
 
     public void sendControlRequest(View v) throws JSONException {
         queue = Volley.newRequestQueue(this.getApplicationContext());
-        url = "http://" + ipAddress + "/AiRProjectMock.php";
+        url = "http://" + ipAddress + "/set_color?color_settings=" + getDisplayControlParams();
         Log.v("Url address: ", url);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, getDisplayControlParams(), new Response.Listener<JSONObject>() {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 Toast.makeText(getApplicationContext(), "Response: "+response, Toast.LENGTH_LONG).show();
@@ -347,7 +347,7 @@ public class LEDSending extends AppCompatActivity {
 
         jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(5000, 0,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
+        Log.v("jsonObjectRequest: ", String.valueOf(jsonObjectRequest));
         queue.add(jsonObjectRequest);
     }
 
