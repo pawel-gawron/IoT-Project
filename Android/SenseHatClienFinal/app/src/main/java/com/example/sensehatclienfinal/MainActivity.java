@@ -32,9 +32,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -49,18 +52,24 @@ public class MainActivity extends AppCompatActivity {
     JSONObject responseTemperature;
     JSONObject responseHumidity;
     JSONObject responsePressure;
+    JSONObject responsePitch;
+    JSONObject responseRoll;
+    JSONObject responseYaw;
     TextView text;
     Timer timer;
     int k = 0; //!< Samples counter
     float temperature;
     float humidity;
     float pressure;
+    float pitch;
+    float roll;
+    float yaw;
+    Boolean extendChart = false;
     float originalSignal;
+    public ArrayList<Float> angleVector = new ArrayList<>();
     private GraphView chart; //!< GraphView object
     private LineGraphSeries[] signal;
     int sampleMax;
-    DataPoint[] dataOriginal;
-    DataPoint[] dataFiltered;
     private RadioButton optionTemp;
     private RadioButton optionPress;
     private RadioButton optionHum;
@@ -90,12 +99,11 @@ public class MainActivity extends AppCompatActivity {
 
         textViewSampleTime = findViewById(R.id.textViewSampleTime);
         textViewSampleTime.setText(getSampleTimeDisplayText(Integer.toString(sampleTime)));
-        ChartInit();
-
-        dataOriginal = new DataPoint[1000*(100/sampleTime)];
-        dataFiltered = new DataPoint[1000*(100/sampleTime)];
+        ChartInit(false);
 
         sampleMax = 100*(100/sampleTime);
+        angleVector.add((float) 0);
+        angleVector.add((float) 0);
     }
 
     @Override
@@ -111,9 +119,6 @@ public class MainActivity extends AppCompatActivity {
             String sampleTimeText = dataIntent.getStringExtra(Common.CONFIG_SAMPLE_TIME);
             sampleTime = Integer.parseInt(sampleTimeText);
             textViewSampleTime.setText(getSampleTimeDisplayText(sampleTimeText));
-
-            dataOriginal = new DataPoint[1000*(100/sampleTime)];
-            dataFiltered = new DataPoint[1000*(100/sampleTime)];
 
             sampleMax = 100*(100/sampleTime);
         }
@@ -188,6 +193,10 @@ public class MainActivity extends AppCompatActivity {
 
         chart.removeSeries(signal[0]);
         chart.removeSeries(signal[1]);
+//        chart.removeSeries(signal[2]);
+//        chart.removeSeries(signal[3]);
+//        chart.removeSeries(signal[4]);
+//        chart.removeSeries(signal[5]);
 
         
         switch (radioButtonCheck())
@@ -198,7 +207,8 @@ public class MainActivity extends AppCompatActivity {
                 titleOriginal = "Temperature";
                 titleFiltered = "Filtered Temperature";
                 yAxisTitle = "degC";
-                ChartInit();
+                extendChart = true;
+                ChartInit(false);
 
                 break;
             case "Press":
@@ -207,7 +217,8 @@ public class MainActivity extends AppCompatActivity {
                 titleOriginal = "Pressure";
                 titleFiltered = "Filtered Pressure";
                 yAxisTitle = "hPa";
-                ChartInit();
+                extendChart = true;
+                ChartInit(false);
 
                 break;
             case "Hum":
@@ -216,7 +227,8 @@ public class MainActivity extends AppCompatActivity {
                 titleOriginal = "Humidity";
                 titleFiltered = "Filtered Humidity";
                 yAxisTitle = "%";
-                ChartInit();
+                extendChart = true;
+                ChartInit(false);
 
                 break;
             case "Angle":
@@ -225,7 +237,8 @@ public class MainActivity extends AppCompatActivity {
                 titleOriginal = "Angle";
                 titleFiltered = "Filtered Angle";
                 yAxisTitle = "deg";
-                ChartInit();
+                extendChart = false;
+                ChartInit(true);
 
                 break;
             default:
@@ -237,12 +250,16 @@ public class MainActivity extends AppCompatActivity {
 
             signal[0].resetData(new DataPoint[]{});
             signal[1].resetData(new DataPoint[]{});
+            signal[2].resetData(new DataPoint[]{});
+            signal[3].resetData(new DataPoint[]{});
+            signal[4].resetData(new DataPoint[]{});
+            signal[5].resetData(new DataPoint[]{});
 
             timer = new Timer();
             TimerTask filterTimerTask = new TimerTask() {
                 public void run() {
                     try {
-                        server();
+                        server(extendChart);
                     } catch (ExecutionException e) {
                         e.printStackTrace();
                     } catch (InterruptedException e) {
@@ -265,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void server() throws ExecutionException, InterruptedException, TimeoutException, JSONException {
+    public void server(Boolean extendedChart) throws ExecutionException, InterruptedException, TimeoutException, JSONException {
 
         if (k <= sampleMax) {
             if (queue == null) {
@@ -284,10 +301,16 @@ public class MainActivity extends AppCompatActivity {
             responseTemperature = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get(0);
             responseHumidity = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get(1);
             responsePressure = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get(2);
+            responsePitch = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get(4);
+            responseRoll = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get(3);
+            responseYaw = (JSONObject) future.get(100, TimeUnit.MILLISECONDS).get(5);
 
             temperature = Float.parseFloat(responseTemperature.getString("value"));
             humidity = Float.parseFloat(responseHumidity.getString("value"));
             pressure = Float.parseFloat(responsePressure.getString("value"));
+            roll = Float.parseFloat(responseRoll.getString("value"));
+            pitch = Float.parseFloat(responsePitch.getString("value"));
+            yaw = Float.parseFloat(responseYaw.getString("value"));
 
             switch (radioButtonCheck())
             {
@@ -304,7 +327,9 @@ public class MainActivity extends AppCompatActivity {
 
                     break;
                 case "Angle":
-                    originalSignal = temperature;
+                    originalSignal = roll;
+                    angleVector.set(0, pitch);
+                    angleVector.set(1, yaw);
 
                     break;
                 default:
@@ -316,14 +341,21 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
 
-                    final Double xf = filter.Execute(Double.valueOf(originalSignal));
+                    Double xf = filter.Execute(Double.valueOf(originalSignal));
 
-                    signal[0].appendData(new DataPoint(k * (sampleTime/1000.0), originalSignal), false, sampleMax);
+                        signal[0].appendData(new DataPoint(k * (sampleTime / 1000.0), originalSignal), false, sampleMax);
+                        signal[1].appendData(new DataPoint(k * (sampleTime / 1000.0), xf), false, sampleMax);
+                    if(!extendedChart)
+                    {
+                        xf = filter.Execute(Double.valueOf(angleVector.get(0)));
+                        signal[2].appendData(new DataPoint(k * (sampleTime / 1000.0), angleVector.get(0)), false, sampleMax);
+                        signal[3].appendData(new DataPoint(k * (sampleTime / 1000.0), xf), false, sampleMax);
 
-                    signal[1].appendData(new DataPoint(k * (sampleTime/1000.0), xf), false, sampleMax);
+                        xf = filter.Execute(Double.valueOf(angleVector.get(1)));
+                        signal[4].appendData(new DataPoint(k * (sampleTime / 1000.0), angleVector.get(1)), false, sampleMax);
+                        signal[5].appendData(new DataPoint(k * (sampleTime / 1000.0), xf), false, sampleMax);
+                    }
                     chart.onDataChanged(true, true);
-                    dataOriginal[k] = new DataPoint(k*(sampleTime/1000.0), originalSignal);
-                    dataFiltered[k] = new DataPoint(k*(sampleTime/1000.0), xf);
                 }
             });
             k++;
@@ -345,11 +377,22 @@ public class MainActivity extends AppCompatActivity {
         return optionChecked;
     }
 
-    private void ChartInit() {
+    private void ChartInit(Boolean typeChart) {
         // https://github.com/jjoe64/GraphView/wiki
         chart = (GraphView)findViewById(R.id.chart);
-        signal = new LineGraphSeries[]{ new LineGraphSeries<>(new DataPoint[]{}),
-                new LineGraphSeries<>(new DataPoint[]{})};
+
+        if(!typeChart) {
+            signal = new LineGraphSeries[]{new LineGraphSeries<>(new DataPoint[]{}),
+                    new LineGraphSeries<>(new DataPoint[]{})};
+        }else
+        {
+            signal = new LineGraphSeries[]{new LineGraphSeries<>(new DataPoint[]{}),
+                    new LineGraphSeries<>(new DataPoint[]{}),
+                    new LineGraphSeries<>(new DataPoint[]{}),
+                    new LineGraphSeries<>(new DataPoint[]{}),
+                    new LineGraphSeries<>(new DataPoint[]{}),
+                    new LineGraphSeries<>(new DataPoint[]{})};
+        }
         chart.addSeries(signal[0]);
         chart.addSeries(signal[1]);
 
@@ -364,6 +407,25 @@ public class MainActivity extends AppCompatActivity {
         signal[0].setColor(Color.BLUE);
         signal[1].setTitle(titleFiltered);
         signal[1].setColor(Color.RED);
+
+        if(typeChart) {
+            chart.addSeries(signal[2]);
+            chart.addSeries(signal[3]);
+            chart.addSeries(signal[4]);
+            chart.addSeries(signal[5]);
+            signal[0].setTitle(titleOriginal + " Roll");
+            signal[0].setColor(Color.BLUE);
+            signal[1].setTitle(titleFiltered + " Roll");
+            signal[1].setColor(Color.RED);
+            signal[2].setTitle(titleOriginal + " Pitch");
+            signal[2].setColor(Color.GREEN);
+            signal[3].setTitle(titleFiltered + " Pitch");
+            signal[3].setColor(Color.YELLOW);
+            signal[4].setTitle(titleOriginal + " Yaw");
+            signal[4].setColor(Color.BLACK);
+            signal[5].setTitle(titleFiltered + " Yaw");
+            signal[5].setColor(Color.CYAN);
+        }
 
         chart.getLegendRenderer().setVisible(true);
         chart.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
