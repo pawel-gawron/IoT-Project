@@ -123,6 +123,6 @@ function userSendData()
   // client.get(`http://localhost:8080/set_color?color_settings=${json_string}`, function(response) {
   //   console.log(response);
   // });
-  console.log(fetchAsync(`http://localhost:8080/set_color?color_settings=${json_string}`));
+  console.log(fetchAsync(`http://192.168.0.44:8080/set_color?color_settings=${json_string}`));
   //   // do something with response
 };

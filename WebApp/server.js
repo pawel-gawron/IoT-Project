@@ -2,7 +2,7 @@ class server {
 	constructor(ip){
 		this.protocol = 'http://';
 		this.ip = ip + '/';
-		this.script = 'system_iot/temperature_pressure.php?k='; // 'cgi-bin/server/test_signal.py'
+		this.script = 'get_measurements'; // 'cgi-bin/server/test_signal.py'
 		this.signalValue = 0;
 	}
 	async getTestSignal(sampleNumber) {
