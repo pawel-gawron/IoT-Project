@@ -7,6 +7,7 @@ var samplesMax;
 var k = 0; //!< Samples counter
 var chartTimer = null;
 var x;
+var y;
 var filter;
 var filter2;
 /**** My IIR Low pass filter ****************************************************/
@@ -21,33 +22,48 @@ $(document).ready(() => {
 
 	// $("#samplefreq").text(1.0/MyFirData.sampletime);
 
-	serverMock = new server("localhost");
+	serverMock = new server("192.168.0.44:8080");
 	filter = new IIR_Filter(IIRFirData.feedforward_coefficients, IIRFirData.feedbackward_coefficients, IIRFirData.stateforward, IIRFirData.statebackward);
 	filter2 = new MyFir(MyFirData.feedforward_coefficients, MyFirData.state);
 });
 
+async function fetchAsync (url) {
+  let response = await fetch(url);
+  let data = await response.json();
+  return data;
+}
+
 async function getJsonData() {
 	if( k <= samplesMax ){
 		// get signal from server
-		x = await serverMock.getTestSignal(k)
+		// x = serverMock.getTestSignal(k);
+		x = fetchAsync("http://192.168.0.44:8080/get_measurements");
+		
+		x.then((value) =>{
+			// console.log(value["pressure"]);
+			x = value;
+			xf = filter.Execute(x["temperature"]["value"]);
+			signal[0].push(x["temperature"]["value"]);
+			// signal[1].push(x.press);
+			signal[1].push(xf);
+	
+		console.log(x["pressure"]);
 		// x = await serverMock.getTestSignal(k)
 		// filter signal
 		$("#response").val(JSON.stringify(x));
 		// display data (Chart.js)
 		// console.log(`temp: ${x.temp}`);
-		xf = filter.Execute(x.temp);
-		signal[0].push(x.temp);
-		// signal[1].push(x.press);
-		signal[1].push(xf);
+
 		chart.update();
 
 
 
-		xf = filter2.Execute(x.press);
-		signal2[0].push(x.press);
+		xf = filter2.Execute(x["pressure"]["value"]);
+		signal2[0].push(x["pressure"]["value"]);
 		signal2[1].push(xf);
 		// console.log(`press: ${xp}`);
 		chart2.update();
+		});
 
 		// // update time
 		k++;

@@ -6,7 +6,7 @@ public class Common {
 
     // configuration info: names and default values
     public final static String CONFIG_IP_ADDRESS = "ipAddress";
-    public final static String DEFAULT_IP_ADDRESS = "192.168.0.43:8080"; //"192.168.0.12";
+    public final static String DEFAULT_IP_ADDRESS = "192.168.0.44:8080"; //"192.168.0.12";
 
     public final static String CONFIG_SAMPLE_TIME = "sampleTime";
     public final static int DEFAULT_SAMPLE_TIME = 100;
