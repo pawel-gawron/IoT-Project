@@ -4,7 +4,7 @@
 	<!-- HTML file head: web page metadata -->
 	<head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>System IOT - Settings</title>
+		<title>HTML/jQuery examples</title>
 
 		<link rel="shortcut icon" href="#" />
 		<!-- jQuery -->
@@ -21,7 +21,7 @@
 
 		<!-- Load font awesome icons -->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<style>
+		<style>
 body {
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
@@ -86,24 +86,51 @@ body {
 }
 </style>
 
+		<script type="text/javascript" src="REST_chart_get.js"></script>
+		<script type="text/javascript" src="server.js"></script>
+		<script type="text/javascript" src="IIR_Filter.js"></script>
+		<script type="text/javascript" src="MyFir.js"></script>
+		<script type="text/javascript" src="MyFirData.js"></script>
+		<script type="text/javascript" src="IIR_Filter_Data.js"></script>
 		<link rel="stylesheet" type="text/css" href="Rest_Chart.css">
-		<script type="text/javascript" src="settings.js"></script>
-</head>
+	</head>
 
+	<!-- HTML file body: web page content -->
+	<!-- HTML file body: web page content -->
 	<body>
+		<div class="navbar">
+	  <a href="settings.htm">Settings</a>
+	  <a href="button.html">LED</a>
+		<a href="dynamic_table.htm">Dynamic Table </a>
 
-<div class="navbar">
-<a href="Rest_chart.htm">Chart</a>
-<a href="button.html">LED</a>
-<a href="dynamic_table.htm">Dynamic Table</a>
 
-</div>
-	<li>IP <input type="string" id="ip_address" name="ip_address"></li><br>
-	<li>Port <input type="number" id="port" name="port" min="10" max="100"></li><br>
-	<li>API version <input type="number" id="api" name="api" min="10" max="100"></li><br>
-	<li>Sampling period <input type="number" id="sampling" name="sampling" min="10" max="100"></li><br>
-	<li>Max samples number <input type="number" id="maxNumber" name="maxNumber" min="10" max="100"></li><br>
-	<button id="submit" type="button" class="btn btn-primary menuitem">Submit</button>
+	</div>
+
+		<h1 class="text-center">Simple client-side data processing example</h1>
+		<div id="datagrabber" class="container border border-primary rounded datagrabber">
+			<ul class="nav">
+				<li><button id="start" type="button" class="btn btn-primary menuitem">Run Chart</button></li>
+				<li><button id="stop" type="button" class="btn btn-primary menuitem">Stop Chart</button></li>
+				<li><div class="border border-primary rounded menuitem">
+					<span class="optionitem">
+					<input type="number" name="samplingPeriod" id="samplingPeriod" value = 0.1 min = 0.0001 max = 1> s</input>
+					<span>
+					</div>
+				</li>
+			</ul>
+			<div class="chartcontainer">
+				<canvas id="chart"></canvas>
+			</div>
+			<div class="chartcontainer">
+				<canvas id="chart2"></canvas>
+			</div>
+		</div>
+		<div id="out">
+			<b>Test:</b>
+			<br>
+			<output id="response"></output>
+			<br><br>
+		</div>
 	</body>
 
 </html>

@@ -101,12 +101,30 @@ body {
 		<div class="navbar">
 	  <a href="settings.htm">Settings</a>
 	  <a href="button.html">LED</a>
-		<a href="dynamic_table.htm">Dynamic Table </a>
+		<a href="dynamic_table.htm">Dynamic Table</a>
 
 
 	</div>
+	<label for=""> Choose signal: </label>
 
-		<h1 class="text-center">Simple client-side data processing example</h1>
+	<select name="selector" id="choose_signal" onchange="change_signal()">
+	  <option value="temperature">Temperature</option>
+		<option value="humidity">Humidity</option>
+	  <option value="pressure">Pressure</option>
+	  <option value="roll">Roll position</option>
+		<option value="pitch">Pitch position</option>
+		<option value="yaw">Yaw position</option>
+	</select>
+
+	<!-- <script>
+	function change_signal(){
+	var e = document.getElementById("choose_signal");
+	var value = e.value;
+	console.log(`picked signal: ${value}`);
+	}
+	</script> -->
+
+		<h1 class="text-center" id ="title">Realtime signal graph with filtration</h1>
 		<div id="datagrabber" class="container border border-primary rounded datagrabber">
 			<ul class="nav">
 				<li><button id="start" type="button" class="btn btn-primary menuitem">Run Chart</button></li>

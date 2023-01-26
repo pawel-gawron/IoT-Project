@@ -162,13 +162,22 @@ body {
 </table>
 
 <script>
+
+
 json_data = {}
 
 
 function ajax_refresh(){
+  var ip_address = sessionStorage.getItem("ip_address");
+  if (!ip_address){
+    ip_address = "192.168.1.66"
+  }
+  console.log(ip_address);
+
 $.ajax({
   method:'GET',
-  url:"http://localhost/system_iot/projectMock.php",
+  // url:"http://localhost/system_iot/projectMock.php",
+  url:`http://${ip_address}:8080/get_measurements`,
   success:function(response){
     json_data = response
     // console.log(json_data)

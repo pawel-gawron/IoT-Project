@@ -117,12 +117,18 @@ function userSendData()
 	//   // $("#data").val(JSON.stringify(matrixState, null, 2));
   // }
   var json_string = JSON.stringify(matrixState, null, 2).replace(/\s/g, '');
-  console.log(json_string);
+  // console.log(json_string);
+  var ip_address = sessionStorage.getItem("ip_address");
+  if (!ip_address){
+    ip_address = "192.168.1.64"
+  }
+  console.log(ip_address);
+
   // require('http');
   // var client = new HttpClient();
   // client.get(`http://localhost:8080/set_color?color_settings=${json_string}`, function(response) {
   //   console.log(response);
   // });
-  console.log(fetchAsync(`http://192.168.0.44:8080/set_color?color_settings=${json_string}`));
+  console.log(fetchAsync(`http://${ip_address}:8080/set_color?color_settings=${json_string}`));
   //   // do something with response
 };
