@@ -139,7 +139,7 @@ body {
 <div class="navbar">
 <a href="Rest_chart.htm" onClick="ajax_abort()">Chart</a>
 <a href="settings.htm" onClick="ajax_abort()">Settings</a>
-<a href="matrix_led.html" onClick="ajax_abort()">LED</a>
+<a href="button.html" onClick="ajax_abort()">LED</a>
 
 </div>
 
@@ -176,9 +176,11 @@ function ajax_refresh(){
 
 $.ajax({
   method:'GET',
+  // url:"http://localhost/system_iot/projectMock.php",
   url:`http://${ip_address}:8080/get_measurements`,
   success:function(response){
     json_data = response
+    // console.log(json_data)
     buildTable(json_data)
   }
 })}

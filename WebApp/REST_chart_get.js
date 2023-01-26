@@ -24,7 +24,9 @@ $(document).ready(() => {
 	$("#start").click(Start);
 	$("#stop").click(Stop);
 
+	// $("#samplefreq").text(1.0/MyFirData.sampletime);
 
+	// serverMock = new server("192.168.1.64:8080");
 	filter2 = new IIR_Filter(IIRFirData.feedforward_coefficients, IIRFirData.feedbackward_coefficients, IIRFirData.stateforward, IIRFirData.statebackward);
 	filter = new MyFir(MyFirData.feedforward_coefficients, MyFirData.state);
 });
@@ -37,6 +39,9 @@ async function fetchAsync (url) {
 
 async function getJsonData() {
 	if( k <= samplesMax ){
+		// get signal from server
+		// x = serverMock.getTestSignal(k);
+		// ip_address = sessionStorage.getItem("ip_address");
 		var ip_address = sessionStorage.getItem("ip_address");
 		if (!ip_address){
 			ip_address = "192.168.1.66"
@@ -132,6 +137,8 @@ function ChartInit()
 				borderColor: 'rgb(0, 255, 0)',
 				data: [],
 				lineTension: 0
+				// ,
+				// yAxisID: 'yTemp'
 			},
 			{
 				fill: false,
@@ -140,7 +147,8 @@ function ChartInit()
 				borderColor: 'rgb(0, 0, 255)',
 				data: [],
 				lineTension: 0
-
+				// ,
+				// yAxisID: 'yPress'
 			}]
 		},
 
@@ -151,6 +159,18 @@ function ChartInit()
 			animation: false,
 			scales: {
 				yAxes: [
+				// {
+					// scaleLabel: {
+						// display: true,
+						// labelString: 'Pressure [hPa]',
+					// },
+					// ticks: {
+						// suggestedMin: 900,
+						// suggestedMax: 1200
+					// },
+					// position: 'right',
+					// id: "yPress"
+				// },
 				{
 					scaleLabel: {
 						display: true,
@@ -160,7 +180,9 @@ function ChartInit()
 						suggestedMin: 0,
 						suggestedMax: 33
 					}
-
+					// ,
+					// position: 'left',
+					// id: "yTemp"
 				}],
 				xAxes: [{
 					scaleLabel: {
