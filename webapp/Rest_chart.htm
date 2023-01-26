@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+	<!-- HTML file head: web page metadata -->
+	<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>HTML/jQuery examples</title>
+
+		<link rel="shortcut icon" href="#" />
+		<!-- jQuery -->
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+		<!-- Chart.js library -->
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+
+		<!-- Load font awesome icons -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+}
+
+.navbar {
+  overflow: hidden;
+  background-color: #333;
+}
+
+.navbar a {
+  float: left;
+  font-size: 16px;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.subnav {
+  float: left;
+  overflow: hidden;
+}
+
+.subnav .subnavbtn {
+  font-size: 16px;
+  border: none;
+  outline: none;
+  color: white;
+  padding: 14px 16px;
+  background-color: inherit;
+  font-family: inherit;
+  margin: 0;
+}
+
+.navbar a:hover, .subnav:hover .subnavbtn {
+  background-color: red;
+}
+
+.subnav-content {
+  display: none;
+  position: absolute;
+  left: 0;
+  background-color: red;
+  width: 100%;
+  z-index: 1;
+}
+
+.subnav-content a {
+  float: left;
+  color: white;
+  text-decoration: none;
+}
+
+.subnav-content a:hover {
+  background-color: #eee;
+  color: black;
+}
+
+.subnav:hover .subnav-content {
+  display: block;
+}
+</style>
+
+		<script type="text/javascript" src="REST_chart_get.js"></script>
+		<script type="text/javascript" src="server.js"></script>
+		<script type="text/javascript" src="IIR_Filter.js"></script>
+		<script type="text/javascript" src="MyFir.js"></script>
+		<script type="text/javascript" src="MyFirData.js"></script>
+		<script type="text/javascript" src="IIR_Filter_Data.js"></script>
+		<link rel="stylesheet" type="text/css" href="Rest_Chart.css">
+	</head>
+
+	<!-- HTML file body: web page content -->
+	<!-- HTML file body: web page content -->
+	<body>
+		<div class="navbar">
+	  <a href="settings.htm">Settings</a>
+	  <a href="button.html">LED</a>
+		<a href="dynamic_table.htm">Dynamic Table</a>
+
+
+	</div>
+	<label for=""> Choose signal: </label>
+
+	<select name="selector" id="choose_signal" onchange="change_signal()">
+	  <option value="temperature">Temperature</option>
+		<option value="humidity">Humidity</option>
+	  <option value="pressure">Pressure</option>
+	  <option value="roll">Roll position</option>
+		<option value="pitch">Pitch position</option>
+		<option value="yaw">Yaw position</option>
+	</select>
+
+	<!-- <script>
+	function change_signal(){
+	var e = document.getElementById("choose_signal");
+	var value = e.value;
+	console.log(`picked signal: ${value}`);
+	}
+	</script> -->
+
+		<h1 class="text-center" id ="title">Realtime signal graph with filtration</h1>
+		<div id="datagrabber" class="container border border-primary rounded datagrabber">
+			<ul class="nav">
+				<li><button id="start" type="button" class="btn btn-primary menuitem">Run Chart</button></li>
+				<li><button id="stop" type="button" class="btn btn-primary menuitem">Stop Chart</button></li>
+				<li><div class="border border-primary rounded menuitem">
+					<span class="optionitem">
+					<input type="number" name="samplingPeriod" id="samplingPeriod" value = 0.1 min = 0.0001 max = 1> s</input>
+					<span>
+					</div>
+				</li>
+			</ul>
+			<div class="chartcontainer">
+				<canvas id="chart" height="600"></canvas>
+			</div>
+		</div>
+		<div id="out">
+			<b>Test:</b>
+			<br>
+			<output id="response"></output>
+			<br><br>
+		</div>
+	</body>
+
+</html>
