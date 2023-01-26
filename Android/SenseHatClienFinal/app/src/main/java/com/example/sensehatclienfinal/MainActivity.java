@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
             TimerTask filterTimerTask = new TimerTask() {
                 public void run() {
                     try {
-                        server(extendChart);
+                        server();
                     } catch (ExecutionException e) {
                         e.printStackTrace();
                     } catch (InterruptedException e) {
@@ -288,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void server(Boolean extendedChart) throws ExecutionException, InterruptedException, TimeoutException, JSONException {
+    public void server() throws ExecutionException, InterruptedException, TimeoutException, JSONException {
 
         if (k <= sampleMax) {
             if (queue == null) {
