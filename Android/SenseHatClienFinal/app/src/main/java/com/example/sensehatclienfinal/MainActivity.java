@@ -78,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton optionPitch;
     private RadioButton optionYaw;
     private String optionChecked = null;
-    double minY = -30.0;
-    double maxY = 105.0;
+    double minY = -35.0;
+    double maxY = 110.0;
     String titleOriginal = "Temperature";
     String titleFiltered = "Filtered Temperature";
     String yAxisTitle = "degC";
@@ -198,8 +198,8 @@ public class MainActivity extends AppCompatActivity {
         switch (radioButtonCheck())
         {
             case "Temp":
-                minY = -30.0;
-                maxY = 105.0;
+                minY = -35.0;
+                maxY = 110.0;
                 titleOriginal = "Temperature";
                 titleFiltered = "Filtered Temperature";
                 yAxisTitle = "degC";
@@ -207,8 +207,8 @@ public class MainActivity extends AppCompatActivity {
 
                 break;
             case "Press":
-                minY = 600.0;
-                maxY = 1200.0;
+                minY = 200.0;
+                maxY = 1300.0;
                 titleOriginal = "Pressure";
                 titleFiltered = "Filtered Pressure";
                 yAxisTitle = "hPa";
@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "Hum":
                 minY = 0.0;
-                maxY = 100.0;
+                maxY = 360.0;
                 titleOriginal = "Humidity";
                 titleFiltered = "Filtered Humidity";
                 yAxisTitle = "%";
@@ -226,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "Pitch":
                 minY = 0.0;
-                maxY = 90.0;
+                maxY = 360.0;
                 titleOriginal = "Angle Pitch";
                 titleFiltered = "Filtered Pitch";
                 yAxisTitle = "deg";
@@ -235,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "Roll":
                 minY = 0.0;
-                maxY = 90.0;
+                maxY = 360.0;
                 titleOriginal = "Angle Yaw";
                 titleFiltered = "Filtered Yaw";
                 yAxisTitle = "deg";
@@ -243,8 +243,8 @@ public class MainActivity extends AppCompatActivity {
 
                 break;
             case "Yaw":
-                minY = 0.0;
-                maxY = 90.0;
+                minY = -180.0;
+                maxY = 180.0;
                 titleOriginal = "Angle Roll";
                 titleFiltered = "Filtered Roll";
                 yAxisTitle = "deg";
