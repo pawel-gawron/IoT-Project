@@ -331,7 +331,6 @@ public class LEDSending extends AppCompatActivity {
     public void sendControlRequest(View v) throws JSONException {
         queue = Volley.newRequestQueue(this.getApplicationContext());
         url = "http://" + ipAddress + "/set_color?color_settings=" + getDisplayControlParams();
-        Log.v("Url address: ", url);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
