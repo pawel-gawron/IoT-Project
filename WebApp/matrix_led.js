@@ -129,6 +129,8 @@ function userSendData()
   // client.get(`http://localhost:8080/set_color?color_settings=${json_string}`, function(response) {
   //   console.log(response);
   // });
-  console.log(fetchAsync(`http://${ip_address}:8080/set_color?color_settings=${json_string}`));
+  console.log(fetchAsync(`http://192.168.1.64:8080/set_color?color_settings=${json_string}`));
+
+  // console.log(fetchAsync(`http://${ip_address}:8080/set_color?color_settings=${json_string}`));
   //   // do something with response
 };

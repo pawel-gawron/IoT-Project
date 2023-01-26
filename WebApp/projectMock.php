@@ -19,19 +19,6 @@
   $Temp = rand($minTemp, $maxTemp);
   //$Temp = 10*sin(1*$x)+20*sin(5*$x)+5*sin(18*$x)+7*sin(20*$x);
 
-  $stuff = array(
-  array( 'Name' => 'Temperature', 'value' => $Temp, 'unit' => 'C'),
-  array( 'Name' => 'Humidity', 'value' => $Hum, 'unit' => '%'),
-  array( 'Name' => 'Pressure', 'value' => $Press, 'unit' => 'mbar'),
-  array( 'Name' => 'Roll position', 'value' => $Angle, 'unit' => 'deg'),
-  array( 'Name' => 'Pitch position', 'value' => $Angle1, 'unit' => 'deg'),
-  array( 'Name' => 'Yaw position', 'value' => $Angle2, 'unit' => 'deg'),
-  );
-
-  $Name = array("Temperature", "Humidity", "Pressure", "roll", "pitch", "yaw");
-  $Value = array($Temp , $Hum, $Press, $Angle, $Angle, $Angle);
-  $Unit = array("C", "%", "hPa", "deg", "deg", "deg");
-
   $JSON = array(
     'Temperature' => array(
         'value' => $Temp,
